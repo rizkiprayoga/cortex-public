@@ -1,16 +1,12 @@
 # Cortex
 
-A personal project: an algorithmic trading bot for MetaTrader 5, combining HMM regime detection with LSTM price prediction.
+An algorithmic trading bot for **MetaTrader 5**, combining **HMM regime detection**, **LSTM price prediction with Triple-Barrier labels**, **per-symbol model heads** (regression / 3-class softmax), and **multi-layer risk management**.
 
-I'm a data analyst with a statistics background. This started as a way to apply ML and statistics to something I cared about, and grew into a more involved system as I kept hitting real problems and trying to fix them. Most of the code was written with heavy AI-assistant support (Claude Code).
-
-This public repo is a **redacted version**. Tuned strategy parameters are replaced with placeholder zeros so the bot won't actually trade anything as-is. The structure of the system is still visible — that's what I want to share.
+This public repo is a redacted version — tuned strategy parameters are replaced with placeholder zeros so the bot won't trade anything as-is. The system structure is still visible.
 
 ---
 
 ## What's in the box
-
-The system has the usual pieces of a small trading stack:
 
 - **Data pipeline** — pulls OHLCV from MT5, caches it in PostgreSQL, computes ~120 features per bar (technical indicators + multi-timeframe + macro data from FRED / Stooq / yfinance / COT / ECB)
 - **ML models** — a Hidden Markov Model that classifies the current regime (Crash / Bear / Neutral / Bull / Euphoria) on daily bars, and an LSTM that predicts whether a hypothetical entry would hit take-profit before stop-loss within N bars (Triple-Barrier labels)
@@ -18,9 +14,7 @@ The system has the usual pieces of a small trading stack:
 - **Strategy router** — picks one of three strategy classes based on volatility rank, each with its own stop-loss formula
 - **Risk layers** — position sizer, portfolio manager (max concurrent positions, pyramiding rules), and an independent safety thread with multi-level circuit breakers
 - **Web dashboard** — FastAPI backend + React frontend showing signals, positions, equity curve, model state, drift monitoring
-- **Operational bits** — nightly Postgres backups, drift monitoring, MLflow experiment tracking, a watchdog that pings me on Telegram if the bot goes silent
-
-It's been running on a personal demo account.
+- **Operational bits** — nightly Postgres backups, drift monitoring, MLflow experiment tracking, an external watchdog that pings Telegram if the bot's heartbeat goes stale
 
 ---
 
@@ -107,27 +101,10 @@ pytest tests/ -v
 cd frontend && npm install && npm run build
 ```
 
-The placeholder configs won't fire trades. Tuning is on you.
-
----
-
-## A few things I learned along the way
-
-Mostly recording these for myself, but they might be useful:
-
-- **Drift detection isn't as clean as the textbooks suggest.** PSI > 2.0 happens in real markets during regime shifts, and "auto-retrain on PSI > 0.5" creates retrain loops. Some kind of upper ceiling is needed.
-- **MetaTrader 5 timezone handling is a gotcha.** The MT5 Python API returns broker-local time (EET/EEST), not UTC, but it looks like UTC if you don't double-check. I had to retrain everything once I caught that.
-- **`mode` is a reserved word in PostgreSQL.** Don't name a column `mode`. I did. Renaming it was annoying.
-- **Process supervision matters.** A bot that goes silent when it crashes is more common than I thought. An external watchdog (separate Scheduled Task that reads a heartbeat file and pings me on Telegram) caught real outages that in-process error handling missed.
+The placeholder configs will refuse to fire trades.
 
 ---
 
 ## License
 
-No license — all rights reserved. The repo is here so people can look at it, not reuse it.
-
----
-
-## Contact
-
-[github.com/rizkiprayoga](https://github.com/rizkiprayoga)
+No license — all rights reserved.
