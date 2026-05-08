@@ -1,0 +1,113 @@
+# Environment & secrets
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Data (raw data and processed data are not committed)
+data/raw/
+data/processed/
+data/logs/
+# Wave 6 fix #19: per-host runtime state (tier flags, halt flag, etc.)
+data/state/
+# MLflow file-based tracking backend (T-8)
+data/mlflow/
+# A-8 training-distribution snapshots (regenerated each retrain)
+data/models/*.training_dist.json
+
+# Saved model weights (large binary files)
+data/models/*.pkl
+data/models/*.pt
+data/models/*.pth
+data/models/*.joblib
+# Optuna SQLite study DBs (Phase A bake-off, regenerable)
+data/models/*.db
+
+# Model snapshots (rollback archives — regenerable, not committed)
+data/model_snapshots/
+
+# Backtest output artifacts
+data/backtest_results/
+
+# Walk-forward experiment results
+data/walk_forward_results.json
+
+# Jupyter notebooks — checkpoints
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# pytest cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Claude Code local settings (personal overrides + runtime state, not team-wide)
+.claude/
+scripts/nssm/
+*.keep
+
+# Local smoke-test artifacts (Playwright MCP)
+.playwright-mcp/
+smoke-*.png
+
+# Phase A bake-off verdict smoke outputs — regenerable by re-running
+# scripts/bakeoff_verdict.py against the operator's chosen window.
+docs/2a_pivot_results.md
+data/logs/bakeoff/
+data/logs/bakeoff_verdict/
+
+# Model rollback backups + experiment subdirs (Phase 2BQ1, Q2, pre-prodtest,
+# pre-expansion-retrain, threshold-test, etc). Convention: any dir under
+# data/models/ that starts with `_` is ephemeral/experimental — keep on disk
+# as recovery anchors but never commit (large binaries).
+data/models/_*/
+
+# Sprint 3 + canonical_v3 backtest artifacts (regenerable via
+# scripts/backtest.py + scripts/portfolio_simulator.py from canonical recipe).
+data/logs/sprint_3/canonical_v3/
+data/logs/sprint_3/joint_sweep/
+data/logs/sprint_3/baseline_path_d_optionA/
+
+# Saturday LSTM retrain log (regenerable from train_deep_learning.py).
+data/logs/saturday_lstm_retrain.log
+
+# Convention: scripts/_<name>.py = ephemeral one-off diagnostic / A-B harness.
+# Already-tracked underscore-prefixed scripts (e.g. _send_weekly_sample.py,
+# _assert_prod_idle.py) keep being tracked since git only honors .gitignore
+# for new files; only fresh `_<name>.py` scripts are auto-ignored.
+scripts/_*.py
+!scripts/_assert_prod_idle.py
+!scripts/_feature_store_common.py
+!scripts/_mt5_safety.py
+!scripts/_phase2b_meta_opt2_clean_oos.py
+!scripts/_phase2bq15_gbm_parity_vs_lstm_ab.py
+!scripts/_phase2bq1_gbm_thin_vs_rich_ab.py
+!scripts/_phase2bq1_shap_attribution.py
+!scripts/_seed_mlflow_for_bench.py
+!scripts/_send_weekly_sample.py
+.superpowers/

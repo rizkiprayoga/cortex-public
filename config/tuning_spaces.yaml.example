@@ -1,0 +1,25 @@
+# =============================================================================
+# Optuna Hyperparameter Search Spaces — TEMPLATE
+# =============================================================================
+# Used by scripts/train_deep_learning.py --tune --tune-trials N and
+# scripts/train_gbm.py --tune. Defines per-trial sample spaces around the
+# literature defaults in model_config.yaml.
+# =============================================================================
+
+# All spaces below are PLACEHOLDERS. Tune ranges to your data scale.
+
+lstm:
+  hidden_size: [64, 96, 128, 192, 256]
+  num_layers: [1, 2, 3]
+  dropout: { low: 0.1, high: 0.5 }
+  learning_rate: { low: 0.0001, high: 0.01, log: true }
+  weight_decay: { low: 1.0e-6, high: 1.0e-3, log: true }
+  batch_size: [32, 64, 128]
+
+gbm:
+  num_leaves: [7, 15, 31, 63]
+  min_child_samples: [10, 25, 50, 100]
+  reg_lambda: { low: 0.0, high: 5.0 }
+  feature_fraction: { low: 0.5, high: 1.0 }
+  bagging_fraction: { low: 0.5, high: 1.0 }
+  learning_rate: { low: 0.01, high: 0.1, log: true }

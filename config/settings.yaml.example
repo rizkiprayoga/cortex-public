@@ -1,0 +1,127 @@
+# =============================================================================
+# Global Trading System Settings — TEMPLATE
+# =============================================================================
+# Public-facing template. Tuned production values are redacted (placeholders
+# below). Copy to config/settings.yaml and tune for your own setup.
+# =============================================================================
+
+trading:
+  # Trading universe — list whatever symbols your broker supports.
+  symbols:
+    - SYMBOL_1
+    - SYMBOL_2
+    # - ...
+
+  timeframes:
+    regime: "D1"        # HMM regime classification
+    signal: "H4"        # LSTM price prediction signal (primary)
+    short_term: "H1"    # Short-term momentum bridge + execution gating
+    execution: "M15"    # Order execution timing
+    macro_trend: "W1"   # Macro trend context (informational)
+
+  magic_number: 20240101         # Unique ID for orders placed by this bot
+
+  # Order-send retry on transient broker/network failures.
+  # Only retries on TRADE_RETCODE_CONNECTION / TIMEOUT / REQUOTE — real
+  # rejections (Invalid stops, No money, Market closed) fail fast.
+  order_retry_attempts: 3
+  order_retry_backoff_sec: 20.0
+
+risk:
+  # Multi-level circuit breakers (src/safety/circuit_breaker.py).
+  # PLACEHOLDERS — tune based on your risk tolerance.
+  max_daily_loss_soft_pct: 0.0    # Halve sizes when intraday loss exceeds this
+  max_daily_loss_hard_pct: 0.0    # Flat + halt when exceeded
+  max_weekly_loss_soft_pct: 0.0
+  max_weekly_loss_hard_pct: 0.0
+  max_peak_drawdown_pct: 0.0      # Flat + halt until manual reset
+  consecutive_loss_limit: 0
+  consecutive_halt_hours: 0
+
+  # Per-symbol risk percentage (% of equity at risk per entry).
+  # Tuned per-pair via Optuna or grid sweep. Values redacted.
+  per_symbol_risk_pct:
+    SYMBOL_1: 0.0    # PLACEHOLDER
+    SYMBOL_2: 0.0    # PLACEHOLDER
+
+  # Margin caps (src/allocation/portfolio_manager.py).
+  max_position_size_pct: 0.0      # Per-position used-margin cap (% of equity)
+  max_total_exposure_pct: 0.0     # Total used-margin cap (% of equity)
+  free_margin_reserve_pct: 0.0    # Refuse new orders below this free-margin %
+
+  # Pyramiding gate.
+  max_concurrent_per_symbol: 0
+  max_concurrent_total: 0
+  max_daily_trades: 0
+  require_prior_at_breakeven_to_pyramid: true
+
+strategy:
+  # Signal fusion gates (src/brain/signal_combiner.py).
+  long_only_symbols: []                # Symbols that should refuse short signals
+  min_confidence: 0.0                  # PLACEHOLDER
+  flicker_bars_required: 0             # Ring buffer length for direction stability
+  reversal_bars_required: 0            # Opposite signals required for hard-exit
+
+  # Trend-mode logic — widens TP and disables time-exit during sustained regimes.
+  # All thresholds redacted; tune per-pair.
+  trend_mode_enabled: false
+  trend_mode:
+    hmm_persist_bars_d1: 0
+    adx_threshold: 0.0
+    er_threshold: 0.0
+    er_window: 0
+    tp_r_multiplier: 0.0
+
+  # Per-symbol Triple-Barrier parameters.
+  # Active fields (live + backtest): tp_r_multiple, be_trigger_r,
+  # time_exit_h1_bars, model_head, trend_mode_enabled.
+  # `atr_sl_mult` is informational only — actual SL comes from the strategy
+  # class (LowVolAggressive / MidVolCautious / HighVolDefensive) at runtime.
+  #
+  # ALL VALUES BELOW ARE PLACEHOLDERS — tune per-pair against your backtest.
+  per_symbol_params:
+    SYMBOL_1:
+      atr_sl_mult: 0.0               # informational only
+      tp_r_multiple: 0.0             # PLACEHOLDER — tune via grid sweep
+      time_exit_h1_bars: 0           # PLACEHOLDER
+      be_trigger_r: 0.0              # PLACEHOLDER
+      model_head: softmax            # softmax | regression
+      trend_mode_enabled: false
+    SYMBOL_2:
+      atr_sl_mult: 0.0
+      tp_r_multiple: 0.0
+      time_exit_h1_bars: 0
+      be_trigger_r: 0.0
+      model_head: softmax
+      trend_mode_enabled: false
+
+data:
+  lookback_bars: 500             # Bars of history to keep in memory
+  feature_window: 60             # Sequence length for LSTM input
+  retrain_hmm_days: 7            # Retrain HMM every N days
+  retrain_lstm_days: 1           # Retrain LSTM every N days
+  fundamental_refresh_hours: 1   # How often to refresh external data
+
+  # Cross-asset / external feature sources.
+  data_sources:
+    cross_asset_tickers:
+      - "DX-Y.NYB"     # US Dollar Index
+      - "^GSPC"         # S&P 500
+      - "^VIX"          # CBOE Volatility Index
+      - "CL=F"          # WTI Crude Oil
+      - "^TNX"          # 10-Year Treasury Yield
+      - "GC=F"          # Gold Futures
+    # Trends / news keyword routing per symbol — REDACTED (varies by strategy)
+    trends_keywords: {}
+    news_keywords: {}
+
+logging:
+  level: INFO
+  rotate_max_bytes: 10485760    # 10 MB per log file
+  rotate_backup_count: 5
+
+dashboard:
+  host: "127.0.0.1"
+  port: 8787
+  jwt_expiry_minutes: 60
+  auto_lock_minutes: 30

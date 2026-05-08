@@ -1,0 +1,63 @@
+# =============================================================================
+# Data Feed Availability Schema (Phase 1E)
+# =============================================================================
+#
+# Documents how long after a source's natural timestamp each feed becomes
+# actually published. Backtest queries MUST honor these lags or they'll
+# silently leak future information into past simulated bars.
+#
+# Used by `src.data_pipeline.feature_engineering.read_feature_store_safe`,
+# which subtracts `release_lag_hours` from the caller's `as_of` time before
+# querying feature_store — so only already-released rows come back.
+#
+# Per-source lag is the WORST CASE across that source's series. FRED CPI is
+# monthly with ~14d lag while FRED FedFunds is daily with ~1d lag — using
+# 504h (21d) as a single bound for `fred_macro` over-restricts the daily
+# series. Phase 2 can add per-series overrides if needed; today's coarse
+# bound is the safe (correct-but-conservative) default.
+#
+# `cutoff_utc` is documented for Phase 2 same-day-timing refinement and
+# is NOT enforced in 1E.
+# =============================================================================
+
+sources:
+  fred_macro:
+    release_lag_hours: 504        # 21 days — worst case for monthly CPI/M2
+    cutoff_utc: "14:00"           # FRED daily releases ~9am ET
+    notes: >-
+      Mixed cadence: daily series (FedFunds/DXY/VIX) ~1d lag,
+      weekly (jobless claims) ~1d, monthly (CPI/M2) ~14d.
+      Phase 2 can tune per-series via series_lag_overrides if needed.
+
+  cot_disagg:
+    release_lag_hours: 96         # Tuesday snapshot → Friday 15:30 ET + 24h margin
+    cutoff_utc: "20:30"           # CFTC release time = 15:30 ET = 20:30 UTC
+    notes: "XAU disaggregated futures-only report, weekly cadence."
+
+  cot_tff:
+    release_lag_hours: 96         # Same release schedule as Disagg
+    cutoff_utc: "20:30"
+    notes: "FX TFF (Traders in Financial Futures) report, weekly cadence."
+
+  ecb_yield_curve:
+    release_lag_hours: 24         # Published noon Frankfurt for prior session
+    cutoff_utc: "11:00"           # ~12:00 Frankfurt = 11:00 UTC summer
+    notes: "AAA spot curve, daily business-day cadence."
+
+  stooq_yields:
+    release_lag_hours: 24         # Daily close + ~24h delivery
+    cutoff_utc: "23:00"
+    notes: "Sovereign bond daily yields (UK/AU/NZ/JP/DE/US × 2Y+10Y)."
+
+  yfinance_cross_asset:
+    release_lag_hours: 24         # Conservative: market close + 24h cushion
+    cutoff_utc: "21:00"           # ~NY equity close
+    notes: >-
+      Equity indices, FX crosses, commodity futures. Most have intraday data
+      available much sooner; 24h is a safe whole-source bound.
+
+# =============================================================================
+# Adding a new source: add a block here BEFORE writing the persist method
+# in the corresponding fetcher. read_feature_store_safe raises on unknown
+# feature_group rather than silently leaking lookahead.
+# =============================================================================

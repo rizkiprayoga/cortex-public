@@ -1,0 +1,65 @@
+# =============================================================================
+# Model Hyperparameters — TEMPLATE
+# =============================================================================
+# This is a public-facing template. Tuned production values are redacted.
+# Copy to config/model_config.yaml and tune for your own setup.
+# =============================================================================
+
+hmm:
+  n_components: 5            # Crash / Bear / Neutral / Bull / Euphoria
+  covariance_type: "diag"    # Options: spherical, tied, diag, full
+  n_iter: 200                # Max EM iterations
+  tol: 1.0e-4                # Convergence tolerance
+  n_init: 10                 # Number of random initializations
+  features:
+    - "log_return"
+    - "realized_volatility_20"
+    - "volume_ratio"
+    - "rsi_14"
+    - "atr_14"
+
+lstm:
+  input_size: null            # Auto-detect from feature matrix width at runtime
+  hidden_size: 128
+  num_layers: 2
+  dropout: 0.3
+  sequence_length: 60
+  output_size: 1
+  training:
+    epochs: 100
+    batch_size: 64
+    learning_rate: 0.001
+    weight_decay: 1.0e-5
+    patience: 15
+    train_ratio: 0.7
+    val_ratio: 0.15
+    test_ratio: 0.15
+
+signal_combiner:
+  # Weights are tuned per system. The values below are PLACEHOLDERS;
+  # tune via grid sweep or Optuna against your own backtest harness.
+  hmm_weight: 0.0            # PLACEHOLDER — tune for your data
+  lstm_weight: 0.0           # PLACEHOLDER — tune for your data
+  signal_threshold: 0.0      # PLACEHOLDER — typically grid-sweep across
+                             #   {0.30, 0.35, 0.40, 0.45, 0.50, 0.55} per symbol
+  signal_threshold_per_symbol: {}
+
+gbm:
+  # Literature defaults from regime-aware LightGBM research.
+  # Trial 0 of Optuna study mirrors these.
+  num_leaves: 7
+  max_depth: -1
+  min_child_samples: 50
+  reg_alpha: 0.0
+  reg_lambda: 1.0
+  feature_fraction: 0.8
+  bagging_fraction: 0.8
+  bagging_freq: 5
+  n_estimators: 500
+  learning_rate: 0.05
+  early_stopping_rounds: 50
+  classifier:
+    objective: "multiclass"
+    num_class: 3              # Triple-Barrier labels {-1, 0, +1} mapped to {0, 1, 2}
+    metric: "multi_logloss"
+    class_weight: "balanced"

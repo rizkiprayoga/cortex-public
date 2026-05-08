@@ -1,0 +1,28 @@
+# =============================================================================
+# Economic Calendar — News Blackout Schedule — TEMPLATE
+# =============================================================================
+# Lists central-bank meeting dates per affected pair. Bot blocks new entries
+# in [T-blackout_pre_hours, T+blackout_post_hours] around each event.
+#
+# Operator must update this annually with the next year's published meeting
+# schedule. Bot prints a startup warning when any calendar is within 60 days
+# of its last known date.
+# =============================================================================
+
+# Pre/post blackout window (hours).
+blackout_pre_hours: 24      # PLACEHOLDER — tune to your slippage tolerance
+blackout_post_hours: 0      # PLACEHOLDER
+
+# Per-event affects-list mapping. The bot blocks entries on any pair in the
+# affects list for the given event.
+events:
+  # Example structure (no real dates included):
+  # - bank: "FOMC"
+  #   date: "2026-01-29"
+  #   affects: ["USDJPY", "USDCAD"]
+  # - bank: "ECB"
+  #   date: "2026-01-23"
+  #   affects: ["EURUSD"]
+  - bank: "FOMC"
+    date: "2099-01-01"
+    affects: []

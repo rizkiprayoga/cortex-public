@@ -1,0 +1,25 @@
+# =============================================================================
+# MT5 Connection Settings — TEMPLATE
+# =============================================================================
+# Copy to config/mt5_config.yaml and fill in your broker details.
+# Real credentials live in .env (never check those into git).
+# =============================================================================
+
+connection:
+  # MT5 terminal install path. Pin a specific install to prevent the system
+  # from attaching to whatever MT5 is currently in focus.
+  terminal_path: "C:/Program Files/MetaTrader 5/terminal64.exe"
+
+  # Connection timeouts.
+  init_timeout_ms: 30000
+  login_timeout_ms: 10000
+
+  # How long to wait between reconnect attempts on disconnection.
+  reconnect_backoff_seconds: [5, 10, 20, 40]
+
+  # Health check.
+  ping_interval_seconds: 30
+
+# Symbol metadata cache — auto-populated at first connect.
+# Cache file path is relative to project root.
+symbol_cache_path: "data/cache/symbol_specs.json"
